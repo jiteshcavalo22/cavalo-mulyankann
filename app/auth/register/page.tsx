@@ -4,9 +4,11 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Truck, ArrowLeft, ArrowRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [step, setStep] = useState<"details" | "otp">("details");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,7 +36,13 @@ export default function RegisterPage() {
     if (e.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus();
   };
 
-  const handleVerify = () => { if (otp.join("").length === 6) router.push("/dashboard"); };
+  const handleVerify = () => {
+    if (otp.join("").length !== 6) {
+      return;
+    }
+    login({ name, mobile, email: email || undefined });
+    router.push("/dashboard");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

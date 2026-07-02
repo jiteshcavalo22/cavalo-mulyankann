@@ -8,11 +8,12 @@ import {
   Ticket, TrendingUp, Smartphone, Shield, FileText, Camera, Star,
   ChevronLeft, ChevronRight, ChevronDown, Bell, Award, Zap, X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Navbar from "@/components/cavalo/Navbar";
 import Footer from "@/components/cavalo/Footer";
 import ProcessVideoSection from "@/components/cavalo/ProcessVideoSection";
+import HeroProcessPreview from "@/components/cavalo/HeroProcessPreview";
+import HeroBookingWidget from "@/components/booking/HeroBookingWidget";
 
 const slides = [
   {
@@ -33,22 +34,28 @@ const slides = [
     accent: "On WhatsApp",
     subtext: "Detailed inspection report delivered straight to your WhatsApp in 30 minutes.",
   },
+  {
+    video: "/videos/cavalo-process.mp4",
+    fallback: "https://videos.pexels.com/video-files/4364226/4364226-uhd_2560_1440_30fps.mp4",
+    heading: "Watch the Full",
+    accent: "Booking Process",
+    subtext: "See every step — verify, pay, inspector visit and WhatsApp report — in under 2 minutes.",
+    isProcessSlide: true,
+  },
 ];
 
 const gvwPricing = [
-  { cat: "C1", range: "Up to 7.5T", price: 1299, emi: 433 },
-  { cat: "C2", range: "7.5T - 12T", price: 1599, emi: 533 },
-  { cat: "C3", range: "12T - 25T", price: 1899, emi: 633 },
-  { cat: "C4", range: "25T+", price: 2599, emi: 866 },
+  { cat: "C1", range: "Up to 7.5T", price: 1299 },
+  { cat: "C2", range: "7.5T - 12T", price: 1599 },
+  { cat: "C3", range: "12T - 25T", price: 1899 },
+  { cat: "C4", range: "25T+", price: 2599 },
 ];
 
-const brands = ["Tata", "Ashok Leyland", "Mahindra", "Eicher", "BharatBenz", "Force", "AMW", "MAN", "Volvo", "SML"];
-const timeSlots = ["9-11 AM", "11 AM-1 PM", "2-4 PM", "4-6 PM"];
 
 const howItWorks = [
   { icon: User, step: 1, title: "Register", desc: "Sign up with mobile OTP in seconds." },
   { icon: Truck, step: 2, title: "Browse & Select", desc: "Pick truck brand, GVW category and city." },
-  { icon: CreditCard, step: 3, title: "Pay Securely", desc: "Razorpay, UPI, EMI or manual transfer." },
+  { icon: CreditCard, step: 3, title: "Pay Securely", desc: "Razorpay, UPI, cards or WhatsApp payment link." },
   { icon: CheckCircle2, step: 4, title: "Booking Confirmed", desc: "Instant confirmation on WhatsApp." },
   { icon: Shield, step: 5, title: "Inspector Assigned", desc: "Nearest certified inspector dispatched." },
   { icon: Bell, step: 6, title: "Cavalo Alerts You", desc: "Real-time updates at every stage." },
@@ -57,7 +64,7 @@ const howItWorks = [
 
 const usps = [
   { icon: TrendingUp, title: "GVW-Based Pricing", desc: "Pay only for your vehicle's weight category. Fair, transparent pricing with no hidden charges." },
-  { icon: CreditCard, title: "4 Payment Methods", desc: "Razorpay, no-cost EMI, WhatsApp payment link, or manual bank transfer." },
+  { icon: CreditCard, title: "Secure Payments", desc: "Razorpay, UPI, cards, WhatsApp payment link, or bank transfer." },
   { icon: Ticket, title: "Coupon Codes", desc: "Fleet discounts and first-time offers. Use FLEET20 for 20% off on multi-truck bookings." },
   { icon: Smartphone, title: "Partner Inspector App", desc: "Inspectors use our dedicated app for a consistent 150+ point checklist on every truck." },
   { icon: MessageCircle, title: "WhatsApp-First", desc: "Booking, alerts and reports powered by the official WhatsApp Business API." },
@@ -67,7 +74,7 @@ const usps = [
 const faqs = [
   { q: "How does the inspection work?", a: "Our certified inspector visits the truck location and conducts a 150+ point checklist covering engine, chassis, tyres, electricals, body and documents. The full report with photos is delivered via WhatsApp within 30 minutes of completion." },
   { q: "What is GVW-based pricing?", a: "GVW (Gross Vehicle Weight) determines inspection complexity. C1 covers up to 7.5T, C2 covers 7.5-12T, C3 covers 12-25T, and C4 covers 25T+. Heavier vehicles require more detailed checks, hence tiered pricing." },
-  { q: "Can I pay in EMI?", a: "Yes, we offer no-cost EMI via Razorpay with HDFC, ICICI, Axis, SBI and Kotak bank cards. Choose 3, 6 or 9 month tenure at checkout with zero interest." },
+  { q: "What payment methods do you accept?", a: "We accept UPI, debit/credit cards, and net banking via Razorpay. You can also pay through a secure WhatsApp payment link or bank transfer. Apply coupon codes like FLEET20 at checkout." },
   { q: "How long does the report take?", a: "The on-site inspection takes 1-2 hours depending on vehicle category. The full report is compiled and delivered to your WhatsApp within 30 minutes of inspection completion." },
   { q: "Are reports accepted by banks?", a: "Yes. Our reports are accepted by leading NBFCs and commercial vehicle financiers across India for loan assessment, vehicle valuation and pre-purchase due diligence." },
   { q: "Do you offer a quality guarantee?", a: "100% guarantee. If any major issue is missed in the report, we offer a free re-inspection within 24 hours of the original report delivery." },
@@ -81,10 +88,9 @@ export default function Home() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(true);
   const [progressKey, setProgressKey] = useState(0);
+  const [heroVideoFallback, setHeroVideoFallback] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const [formData, setFormData] = useState({ name: "", mobile: "", brand: "", gvw: "", date: "", city: "", slot: "" });
-  const [bookingSuccess, setBookingSuccess] = useState(false);
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
   const [aiChatOpen, setAiChatOpen] = useState(false);
   const [aiMessages, setAiMessages] = useState([{ role: "bot", text: "Hi! I am Cavalo AI. How can I help you with your truck inspection today?" }]);
@@ -112,18 +118,21 @@ export default function Home() {
     if (videoRef.current) videoRef.current.muted = !isMuted;
   };
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formData.name && formData.mobile.length === 10 && formData.brand && formData.gvw && formData.date && formData.city && formData.slot) {
-      setBookingSuccess(true);
-    }
-  };
-
   const sendAiMessage = () => {
     if (!aiInput.trim()) return;
     setAiMessages([...aiMessages, { role: "user", text: aiInput }, { role: "bot", text: "I can help you book a truck inspection, explain GVW pricing, or answer questions about our 150+ point checklist. Would you like to book now or learn more?" }]);
     setAiInput("");
   };
+
+  const currentHeroSlide = slides[currentSlide];
+  const heroVideoSrc =
+    currentHeroSlide.isProcessSlide && heroVideoFallback && "fallback" in currentHeroSlide
+      ? currentHeroSlide.fallback
+      : currentHeroSlide.video;
+
+  useEffect(() => {
+    setHeroVideoFallback(false);
+  }, [currentSlide]);
 
   return (
     <div className="min-h-screen bg-white">
@@ -132,7 +141,21 @@ export default function Home() {
       {/* HERO VIDEO CAROUSEL */}
       <section className="relative min-h-[600px] lg:min-h-screen flex items-center overflow-hidden bg-navy">
         <div className="absolute inset-0 z-0">
-          <video ref={videoRef} key={currentSlide} src={slides[currentSlide].video} autoPlay loop muted={isMuted} playsInline className="w-full h-full object-cover" />
+          <video
+            ref={videoRef}
+            key={`${currentSlide}-${heroVideoSrc}`}
+            src={heroVideoSrc}
+            autoPlay
+            loop
+            muted={isMuted}
+            playsInline
+            className="w-full h-full object-cover"
+            onError={() => {
+              if (currentHeroSlide.isProcessSlide) {
+                setHeroVideoFallback(true);
+              }
+            }}
+          />
           <div className="absolute inset-0 bg-gradient-to-r from-navy via-navy/80 to-navy/30" />
         </div>
         <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 z-20">
@@ -149,10 +172,14 @@ export default function Home() {
               </div>
               <div key={`heading-${currentSlide}`} className="animate-fade-up">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-                  {slides[currentSlide].heading} <span className="text-cavalo-yellow">{slides[currentSlide].accent}</span>
+                  {currentHeroSlide.heading}{" "}
+                  <span className="text-cavalo-yellow">{currentHeroSlide.accent}</span>
                 </h1>
-                <p className="text-white/70 text-lg mt-4 max-w-md">{slides[currentSlide].subtext}</p>
+                <p className="text-white/70 text-lg mt-4 max-w-md">{currentHeroSlide.subtext}</p>
               </div>
+
+              <HeroProcessPreview />
+
               <div className="flex gap-6 flex-wrap">
                 {[{ v: "5000+", l: "Inspected" }, { v: "200+", l: "Cities" }, { v: "98%", l: "Satisfaction" }].map((s, i) => (
                   <div key={i}>
@@ -168,93 +195,20 @@ export default function Home() {
                     <span className="text-white/80 text-sm ml-1">₹{g.price}</span>
                   </div>
                 ))}
-                <div className="bg-cavalo-yellow rounded-full px-3 py-1.5"><span className="text-navy text-sm font-bold">EMI Available</span></div>
+                <div className="bg-cavalo-yellow rounded-full px-3 py-1.5"><span className="text-navy text-sm font-bold">Secure Pay</span></div>
               </div>
               <div className="flex gap-3 flex-wrap pt-2">
                 <button onClick={() => router.push("/book")} className="btn-cavalo inline-flex items-center gap-2 px-6 py-3 text-base">
                   Book Inspection <ArrowRight className="w-4 h-4" />
                 </button>
-                <button onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="border-2 border-white/40 text-white hover:bg-white/10 rounded px-6 py-3 text-base font-semibold transition">
-                  How It Works
+                <button onClick={() => document.getElementById("process-video")?.scrollIntoView({ behavior: "smooth" })} className="border-2 border-white/40 text-white hover:bg-white/10 rounded px-6 py-3 text-base font-semibold transition">
+                  Watch Process
                 </button>
               </div>
             </div>
 
-            {/* Right — Booking form */}
-            <div className="bg-white rounded-lg shadow-2xl p-6 lg:p-8 max-w-md mx-auto w-full">
-              {bookingSuccess ? (
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 className="w-8 h-8 text-green-600" />
-                  </div>
-                  <h3 className="text-xl font-bold text-navy mb-2">Booking Received!</h3>
-                  <p className="text-gray-600 text-sm">We will confirm your slot on WhatsApp within 10 minutes.</p>
-                  <button onClick={() => { setBookingSuccess(false); setFormData({ name: "", mobile: "", brand: "", gvw: "", date: "", city: "", slot: "" }); }} className="btn-cavalo mt-4 px-6 py-2 text-sm">Book Another</button>
-                </div>
-              ) : (
-                <>
-                  <h2 className="text-xl font-bold text-navy">Book Inspection Slot</h2>
-                  <p className="text-gray-500 text-sm mb-4">Get a certified inspection within 24-48 hours</p>
-                  <form onSubmit={handleBookingSubmit} className="space-y-3">
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Full Name</label>
-                      <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Enter your name" className="mt-1 focus-visible:ring-cavalo-yellow" required />
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Mobile Number</label>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="bg-gray-100 border border-gray-200 rounded px-3 py-2 text-sm text-gray-600">+91</span>
-                        <Input type="tel" value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: e.target.value.replace(/\D/g, "").slice(0, 10) })} placeholder="9876543210" required />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Vehicle Brand</label>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        {brands.slice(0, 6).map((b) => (
-                          <button key={b} type="button" onClick={() => setFormData({ ...formData, brand: b })} className={`text-xs px-2.5 py-1.5 rounded border transition ${formData.brand === b ? "bg-navy border-navy text-white" : "bg-white border-gray-200 text-gray-600 hover:border-cavalo-yellow"}`}>{b}</button>
-                        ))}
-                        <span className="text-xs px-2.5 py-1.5 text-gray-400">+4 more</span>
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">GVW Category</label>
-                      <div className="grid grid-cols-4 gap-1.5 mt-1">
-                        {gvwPricing.map((g) => (
-                          <button key={g.cat} type="button" onClick={() => setFormData({ ...formData, gvw: g.cat })} className={`text-xs py-2 rounded border transition ${formData.gvw === g.cat ? "bg-navy border-navy text-white" : "bg-white border-gray-200 text-gray-600 hover:border-cavalo-yellow"}`}>
-                            <div className="font-bold">{g.cat}</div><div>₹{g.price}</div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className="text-xs font-medium text-gray-600">Preferred Date</label>
-                        <Input type="date" value={formData.date} min={new Date(Date.now() + 86400000).toISOString().split("T")[0]} onChange={(e) => setFormData({ ...formData, date: e.target.value })} className="mt-1" required />
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-600">City</label>
-                        <Input value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} placeholder="Mumbai" className="mt-1" required />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600">Time Slot</label>
-                      <div className="grid grid-cols-4 gap-1.5 mt-1">
-                        {timeSlots.map((s) => (
-                          <button key={s} type="button" onClick={() => setFormData({ ...formData, slot: s })} className={`text-xs py-2 rounded border transition ${formData.slot === s ? "bg-navy border-navy text-white" : "bg-white border-gray-200 text-gray-600 hover:border-cavalo-yellow"}`}>{s}</button>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="bg-blue-50 border border-blue-200 rounded p-2.5 flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                      <span className="text-xs text-blue-700">No-cost EMI available from ₹433/mo on HDFC, ICICI, Axis, SBI</span>
-                    </div>
-                    <button type="submit" disabled={!formData.name || formData.mobile.length !== 10 || !formData.brand || !formData.gvw || !formData.date || !formData.city || !formData.slot} className="btn-cavalo w-full py-2.5 text-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                      Book Inspection Slot
-                    </button>
-                  </form>
-                </>
-              )}
-            </div>
+            {/* Right — Booking flow entry */}
+            <HeroBookingWidget />
           </div>
         </div>
 
@@ -263,7 +217,15 @@ export default function Home() {
           <button onClick={() => { setCurrentSlide((p) => (p - 1 + slides.length) % slides.length); setProgressKey((k) => k + 1); }} className="text-white/60 hover:text-white"><ChevronLeft className="w-6 h-6" /></button>
           <div className="flex gap-2">
             {slides.map((_, i) => (
-              <button key={i} onClick={() => { setCurrentSlide(i); setProgressKey((k) => k + 1); }} className={`h-2 rounded-full transition-all ${i === currentSlide ? "w-8 bg-cavalo-yellow" : "w-2 bg-white/40"}`} />
+              <button
+                key={i}
+                onClick={() => {
+                  setCurrentSlide(i);
+                  setProgressKey((k) => k + 1);
+                }}
+                className={`h-2 rounded-full transition-all ${i === currentSlide ? "w-8 bg-cavalo-yellow" : "w-2 bg-white/40"}`}
+                aria-label={`Go to slide ${i + 1}`}
+              />
             ))}
           </div>
           <button onClick={() => { setIsPlaying(!isPlaying); setProgressKey((k) => k + 1); }} className="text-white/60 hover:text-white">{isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}</button>
@@ -331,7 +293,7 @@ export default function Home() {
                   <div className="text-3xl font-bold text-navy">{g.cat}</div>
                   <div className="text-gray-500 text-sm mt-1">{g.range}</div>
                   <div className="mt-4"><span className="text-4xl font-bold text-cavalo-yellow">₹{g.price}</span></div>
-                  <div className="text-gray-400 text-xs mt-1">or ₹{g.emi}/mo x 3 EMI</div>
+                  <div className="text-gray-400 text-xs mt-1">One-time inspection fee</div>
                 </div>
                 <div className="mt-6 space-y-2">
                   {["150+ Point Checklist", "Certified Inspector", "Photo Documentation", "WhatsApp Report", "PDF Certificate"].map((f) => (
@@ -349,11 +311,11 @@ export default function Home() {
             <div className="flex items-center gap-4">
               <div className="w-12 h-12 bg-cavalo-yellow rounded-lg flex items-center justify-center flex-shrink-0"><CreditCard className="w-6 h-6 text-navy" /></div>
               <div>
-                <h3 className="text-white font-semibold text-lg">No-Cost EMI Available</h3>
-                <p className="text-white/60 text-sm">Pay in 3, 6 or 9 months with HDFC, ICICI, Axis, SBI, Kotak bank cards</p>
+                <h3 className="text-white font-semibold text-lg">Secure Online Payment</h3>
+                <p className="text-white/60 text-sm">Pay via Razorpay — UPI, cards, net banking, or WhatsApp payment link</p>
               </div>
             </div>
-            <button onClick={() => router.push("/book")} className="btn-cavalo px-6 py-2.5 text-sm">Book with EMI</button>
+            <button onClick={() => router.push("/book")} className="btn-cavalo px-6 py-2.5 text-sm">Book &amp; Pay Now</button>
           </div>
         </div>
       </section>

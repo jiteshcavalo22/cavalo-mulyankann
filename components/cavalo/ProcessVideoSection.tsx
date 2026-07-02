@@ -3,80 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Play, Pause, CheckCircle2, ArrowRight,
-  UserCheck, CreditCard, Truck, Bell, FileText,
-  PhoneCall, Shield,
+  Play, Pause, CheckCircle2, ArrowRight, Volume2, VolumeX,
 } from "lucide-react";
-
-/* ── Process steps: each maps to a video timestamp ──────────────── */
-interface Step {
-  id: number;
-  icon: React.ElementType;
-  title: string;
-  caption: string;           // shown as video subtitle
-  description: string;       // shown in left panel
-  timestamp: number;         // seconds into video when this step is "active"
-}
-
-const steps: Step[] = [
-  {
-    id: 1,
-    icon: UserCheck,
-    title: "Register & Book",
-    caption: "Sign up with mobile OTP and select your truck details in under 60 seconds.",
-    description: "Create your account with just your mobile number. Choose your truck brand, GVW category, preferred date, city, and time slot — all in one quick form.",
-    timestamp: 0,
-  },
-  {
-    id: 2,
-    icon: CreditCard,
-    title: "Secure Payment",
-    caption: "Pay via UPI, card, EMI or WhatsApp link — 100% secured by Razorpay.",
-    description: "Multiple payment options: Razorpay, no-cost EMI on major bank cards (HDFC, ICICI, SBI, Axis), WhatsApp payment link, or manual bank transfer.",
-    timestamp: 12,
-  },
-  {
-    id: 3,
-    icon: Bell,
-    title: "Booking Confirmed on WhatsApp",
-    caption: "Instant WhatsApp confirmation with your booking reference number.",
-    description: "You receive an immediate WhatsApp message from our official Business Account with your booking reference, inspection date, city, and time slot details.",
-    timestamp: 24,
-  },
-  {
-    id: 4,
-    icon: Shield,
-    title: "Certified Inspector Assigned",
-    caption: "Nearest certified engineer dispatched to your truck's location.",
-    description: "Our system automatically matches the closest certified inspector to your location. You get their name, photo, rating, and direct phone number on WhatsApp.",
-    timestamp: 36,
-  },
-  {
-    id: 5,
-    icon: Truck,
-    title: "150+ Point Inspection",
-    caption: "Thorough check of engine, chassis, tyres, electricals, cabin & documents.",
-    description: "The inspector arrives and conducts a comprehensive 150+ point inspection covering all critical systems. Photos are captured at every checkpoint using our partner app.",
-    timestamp: 48,
-  },
-  {
-    id: 6,
-    icon: FileText,
-    title: "Report on WhatsApp",
-    caption: "Detailed PDF report with score, photos and recommendations — in 30 minutes.",
-    description: "Within 30 minutes of completing the inspection, you receive a full report on WhatsApp: overall score, per-category breakdown, photo gallery, and pass/fail checklist.",
-    timestamp: 60,
-  },
-];
-
-/* ── Video segments: Pexels videos for each process phase ───────── */
-const processVideos = [
-  "https://videos.pexels.com/video-files/4364226/4364226-uhd_2560_1440_30fps.mp4",
-  "https://videos.pexels.com/video-files/8154986/8154986-uhd_2560_1440_25fps.mp4",
-  "https://videos.pexels.com/video-files/3121422/3121422-uhd_2560_1440_30fps.mp4",
-];
-
-const STEP_DURATION = 4000; // ms per step auto-advance
+import ProcessShareCards from "@/components/cavalo/ProcessShareCards";
+import {
+  PROCESS_ANIMATION_FALLBACK,
+  PROCESS_ANIMATION_VIDEO,
+  PROCESS_STEPS,
+  STEP_DURATION_MS,
+} from "@/lib/cavalo/process-content";
 
 export default function ProcessVideoSection() {
   const router = useRouter();
@@ -84,239 +19,283 @@ export default function ProcessVideoSection() {
   const [isPlaying, setIsPlaying] = useState(true);
   const [captionVisible, setCaptionVisible] = useState(true);
   const [barWidth, setBarWidth] = useState(0);
+  const [useFallbackVideo, setUseFallbackVideo] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const barRef = useRef<NodeJS.Timeout | null>(null);
 
-  /* Auto-advance steps */
+  const videoSrc = useFallbackVideo ? PROCESS_ANIMATION_FALLBACK : PROCESS_ANIMATION_VIDEO;
+  const currentStep = PROCESS_STEPS[activeStep];
+
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying) {
+      return;
+    }
     startProgressBar();
     intervalRef.current = setInterval(() => {
-      setActiveStep((prev) => {
-        const next = (prev + 1) % steps.length;
-        return next;
-      });
-    }, STEP_DURATION);
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+      setActiveStep((prev) => (prev + 1) % PROCESS_STEPS.length);
+    }, STEP_DURATION_MS);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [isPlaying, activeStep]);
 
-  /* Caption fade-in on step change */
   useEffect(() => {
     setCaptionVisible(false);
-    const t = setTimeout(() => setCaptionVisible(true), 200);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => setCaptionVisible(true), 200);
+    return () => clearTimeout(timer);
   }, [activeStep]);
 
-  const startProgressBar = () => {
+  const startProgressBar = (): void => {
     setBarWidth(0);
-    if (barRef.current) clearInterval(barRef.current);
-    const increment = 100 / (STEP_DURATION / 50);
+    if (barRef.current) {
+      clearInterval(barRef.current);
+    }
+    const increment = 100 / (STEP_DURATION_MS / 50);
     barRef.current = setInterval(() => {
-      setBarWidth((w) => {
-        if (w >= 100) { if (barRef.current) clearInterval(barRef.current); return 100; }
-        return w + increment;
+      setBarWidth((width) => {
+        if (width >= 100) {
+          if (barRef.current) {
+            clearInterval(barRef.current);
+          }
+          return 100;
+        }
+        return width + increment;
       });
     }, 50);
   };
 
-  const goToStep = (i: number) => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    setActiveStep(i);
+  const goToStep = (index: number): void => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    setActiveStep(index);
     setIsPlaying(true);
     startProgressBar();
   };
 
-  const togglePlay = () => {
-    setIsPlaying((p) => !p);
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    if (barRef.current) clearInterval(barRef.current);
+  const togglePlay = (): void => {
+    setIsPlaying((playing) => !playing);
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    if (barRef.current) {
+      clearInterval(barRef.current);
+    }
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        void videoRef.current.play();
+      }
+    }
   };
 
-  const videoSrc = processVideos[activeStep % processVideos.length];
-  const currentStep = steps[activeStep];
-
   return (
-    <section className="bg-white py-0 overflow-hidden">
-      {/* ── Top label ── */}
-      <div className="bg-gray-50 border-t border-b border-gray-100 py-3">
-        <div className="cavalo-container flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-cavalo-yellow rounded-full animate-pulse" />
-            <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">See How Cavalo Moolyankann Works</span>
+    <section id="process-video" className="scroll-mt-20 overflow-hidden bg-white">
+      <div className="border-y border-gray-100 bg-gradient-to-r from-navy via-navy-light to-navy py-4">
+        <div className="cavalo-container flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 animate-pulse rounded-full bg-cavalo-yellow" />
+            <span className="text-xs font-bold uppercase tracking-[0.2em] text-white/80">
+              Full process animation
+            </span>
           </div>
-          <span className="text-xs text-gray-400">Step {activeStep + 1} of {steps.length}</span>
+          <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white">
+            Step {activeStep + 1} of {PROCESS_STEPS.length}
+          </span>
         </div>
       </div>
 
-      {/* ── Main two-col layout ── */}
       <div className="cavalo-container py-12 lg:py-16">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+        <div className="mb-10 text-center lg:text-left">
+          <h2 className="text-3xl font-bold text-navy md:text-4xl">How Cavalo Works — End to End</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-gray-500 lg:mx-0">
+            Watch the full booking journey: verify your truck, pay securely, get inspector updates, and receive your report on WhatsApp.
+          </p>
+        </div>
 
-          {/* LEFT — text panel */}
+        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
           <div className="order-2 lg:order-1">
-            {/* Active step heading */}
             <div className="mb-8">
-              <div className="inline-flex items-center gap-2 bg-cavalo-yellow-light border border-cavalo-yellow/30 rounded-full px-3 py-1 mb-4">
-                <currentStep.icon className="w-3.5 h-3.5 text-cavalo-yellow" />
+              <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-cavalo-yellow/30 bg-cavalo-yellow-light px-3 py-1">
+                <currentStep.icon className="h-3.5 w-3.5 text-cavalo-yellow" />
                 <span className="text-xs font-semibold text-cavalo-yellow-dark">Step {currentStep.id}</span>
               </div>
-              <h2
+              <h3
                 key={`title-${activeStep}`}
-                className="text-3xl md:text-4xl font-bold text-navy leading-tight"
-                style={{ animation: "fade-up 0.4s ease-out" }}
+                className="animate-fade-up text-2xl font-bold text-navy md:text-3xl"
               >
                 {currentStep.title}
-              </h2>
+              </h3>
               <p
                 key={`desc-${activeStep}`}
-                className="text-gray-500 text-base mt-4 leading-relaxed"
-                style={{ animation: "fade-up 0.5s ease-out" }}
+                className="animate-fade-up mt-4 text-base leading-relaxed text-gray-500"
               >
                 {currentStep.description}
               </p>
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-2 gap-4 mb-8">
-              <div className="bg-navy rounded-lg p-4">
+            <div className="mb-8 grid grid-cols-2 gap-4">
+              <div className="rounded-xl bg-navy p-4">
                 <div className="text-2xl font-bold text-cavalo-yellow">150+</div>
-                <div className="text-white/70 text-xs mt-1">Point Checklist</div>
+                <div className="mt-1 text-xs text-white/70">Point checklist</div>
               </div>
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="text-2xl font-bold text-navy">30 min</div>
-                <div className="text-gray-500 text-xs mt-1">Report Delivery</div>
+                <div className="mt-1 text-xs text-gray-500">Report on WhatsApp</div>
               </div>
             </div>
 
-            {/* Step list navigation */}
             <div className="space-y-1">
-              {steps.map((step, i) => (
-                <button
-                  key={step.id}
-                  onClick={() => goToStep(i)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all group ${
-                    i === activeStep
-                      ? "bg-cavalo-yellow-light border border-cavalo-yellow/30"
-                      : "hover:bg-gray-50"
-                  }`}
-                >
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all ${
-                    i < activeStep ? "bg-green-500" : i === activeStep ? "bg-cavalo-yellow" : "bg-gray-100"
-                  }`}>
-                    {i < activeStep
-                      ? <CheckCircle2 className="w-4 h-4 text-white" />
-                      : <step.icon className={`w-3.5 h-3.5 ${i === activeStep ? "text-navy" : "text-gray-400 group-hover:text-navy"}`} />
-                    }
-                  </div>
-                  <span className={`text-sm font-medium flex-1 ${i === activeStep ? "text-navy" : "text-gray-500 group-hover:text-navy"}`}>
-                    {step.title}
-                  </span>
-                  {i === activeStep && (
-                    <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden flex-shrink-0">
-                      <div
-                        className="h-full bg-cavalo-yellow rounded-full transition-none"
-                        style={{ width: `${barWidth}%` }}
-                      />
+              {PROCESS_STEPS.map((step, index) => {
+                const StepIcon = step.icon;
+                return (
+                  <button
+                    key={step.id}
+                    type="button"
+                    onClick={() => goToStep(index)}
+                    className={`group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-all ${
+                      index === activeStep
+                        ? "border border-cavalo-yellow/30 bg-cavalo-yellow-light"
+                        : "hover:bg-gray-50"
+                    }`}
+                  >
+                    <div
+                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full transition-all ${
+                        index < activeStep ? "bg-emerald-500" : index === activeStep ? "bg-cavalo-yellow" : "bg-gray-100"
+                      }`}
+                    >
+                      {index < activeStep ? (
+                        <CheckCircle2 className="h-4 w-4 text-white" />
+                      ) : (
+                        <StepIcon
+                          className={`h-3.5 w-3.5 ${
+                            index === activeStep ? "text-navy" : "text-gray-400 group-hover:text-navy"
+                          }`}
+                        />
+                      )}
                     </div>
-                  )}
-                </button>
-              ))}
+                    <span
+                      className={`flex-1 text-sm font-medium ${
+                        index === activeStep ? "text-navy" : "text-gray-500 group-hover:text-navy"
+                      }`}
+                    >
+                      {step.title}
+                    </span>
+                    {index === activeStep ? (
+                      <div className="h-1 w-16 flex-shrink-0 overflow-hidden rounded-full bg-gray-200">
+                        <div className="h-full rounded-full bg-cavalo-yellow" style={{ width: `${barWidth}%` }} />
+                      </div>
+                    ) : null}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* CTA */}
-            <div className="mt-8 flex gap-3">
-              <button onClick={() => router.push("/book")} className="btn-cavalo px-6 py-3 text-sm inline-flex items-center gap-2">
-                Book Inspection <ArrowRight className="w-4 h-4" />
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => router.push("/book")}
+                className="btn-cavalo inline-flex items-center gap-2 px-6 py-3 text-sm"
+              >
+                Book Inspection <ArrowRight className="h-4 w-4" />
               </button>
               <button
+                type="button"
                 onClick={togglePlay}
-                className="border-2 border-gray-200 hover:border-cavalo-yellow text-navy rounded px-4 py-3 text-sm font-semibold transition inline-flex items-center gap-2"
+                className="inline-flex items-center gap-2 rounded-xl border-2 border-gray-200 px-4 py-3 text-sm font-semibold text-navy transition hover:border-cavalo-yellow"
               >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                {isPlaying ? "Pause" : "Play"}
+                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                {isPlaying ? "Pause tour" : "Play tour"}
               </button>
             </div>
           </div>
 
-          {/* RIGHT — video + caption overlay */}
           <div className="order-1 lg:order-2">
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl bg-navy group aspect-video">
-              {/* Video */}
+            <div className="group relative aspect-video overflow-hidden rounded-2xl bg-navy shadow-2xl ring-1 ring-black/5">
               <video
                 ref={videoRef}
-                key={videoSrc}
                 src={videoSrc}
                 autoPlay
                 loop
                 muted
                 playsInline
-                className="w-full h-full object-cover"
+                className="h-full w-full object-cover"
+                onError={() => setUseFallbackVideo(true)}
               />
 
-              {/* Dark overlay at bottom for caption readability */}
-              <div className="absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
-              {/* Step badge — top-left */}
-              <div className="absolute top-4 left-4 bg-cavalo-yellow text-navy text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-                <currentStep.icon className="w-3.5 h-3.5" />
-                Step {currentStep.id} / {steps.length}
+              <div className="absolute left-4 top-4 flex items-center gap-2">
+                <span className="flex items-center gap-1.5 rounded-full bg-cavalo-yellow px-3 py-1.5 text-xs font-bold text-navy shadow-lg">
+                  <currentStep.icon className="h-3.5 w-3.5" />
+                  Step {currentStep.id} / {PROCESS_STEPS.length}
+                </span>
               </div>
 
-              {/* Play/Pause overlay — center (shows on hover) */}
               <button
+                type="button"
                 onClick={togglePlay}
-                className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity group-hover:opacity-100"
               >
-                <div className="w-14 h-14 bg-white/20 backdrop-blur rounded-full flex items-center justify-center border border-white/40">
-                  {isPlaying ? <Pause className="w-6 h-6 text-white" /> : <Play className="w-6 h-6 text-white ml-0.5" />}
+                <div className="flex h-14 w-14 items-center justify-center rounded-full border border-white/40 bg-white/20 backdrop-blur">
+                  {isPlaying ? <Pause className="h-6 w-6 text-white" /> : <Play className="ml-0.5 h-6 w-6 text-white" />}
                 </div>
               </button>
 
-              {/* Caption — Tesla-style bottom bar */}
               <div
-                className={`absolute bottom-0 inset-x-0 px-5 pb-5 transition-all duration-300 ${captionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"}`}
+                className={`absolute inset-x-0 bottom-0 px-5 pb-5 transition-all duration-300 ${
+                  captionVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+                }`}
               >
-                {/* Progress dots */}
-                <div className="flex gap-1 mb-3">
-                  {steps.map((_, i) => (
-                    <button key={i} onClick={() => goToStep(i)} className="flex-1 h-0.5 rounded-full overflow-hidden bg-white/20">
-                      {i < activeStep && <div className="h-full bg-white w-full" />}
-                      {i === activeStep && <div className="h-full bg-cavalo-yellow" style={{ width: `${barWidth}%` }} />}
+                <div className="mb-3 flex gap-1">
+                  {PROCESS_STEPS.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => goToStep(index)}
+                      className="h-1 flex-1 overflow-hidden rounded-full bg-white/25"
+                    >
+                      {index < activeStep ? <div className="h-full w-full bg-white" /> : null}
+                      {index === activeStep ? (
+                        <div className="h-full bg-cavalo-yellow" style={{ width: `${barWidth}%` }} />
+                      ) : null}
                     </button>
                   ))}
                 </div>
-                {/* Caption text */}
                 <p
                   key={`caption-${activeStep}`}
-                  className="text-white text-sm md:text-base font-medium leading-snug"
-                  style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)", animation: "fade-up 0.35s ease-out" }}
+                  className="animate-fade-up text-sm font-medium leading-snug text-white md:text-base"
+                  style={{ textShadow: "0 1px 4px rgba(0,0,0,0.8)" }}
                 >
                   {currentStep.caption}
                 </p>
               </div>
 
-              {/* Step number watermark */}
-              <div className="absolute top-4 right-4 text-white/20 text-6xl font-black leading-none select-none">
+              <div className="absolute right-4 top-4 select-none text-6xl font-black leading-none text-white/15">
                 0{currentStep.id}
               </div>
             </div>
 
-            {/* Below video: quick trust signals */}
             <div className="mt-4 grid grid-cols-3 gap-3">
               {[
-                { v: "5000+", l: "Inspections Done" },
-                { v: "200+", l: "Cities Covered" },
-                { v: "98%", l: "Customer Satisfaction" },
-              ].map((s, i) => (
-                <div key={i} className="bg-gray-50 border border-gray-100 rounded-lg py-3 text-center">
-                  <div className="text-lg font-bold text-navy">{s.v}</div>
-                  <div className="text-gray-500 text-xs">{s.l}</div>
+                { v: "5000+", l: "Inspections" },
+                { v: "200+", l: "Cities" },
+                { v: "98%", l: "Satisfaction" },
+              ].map((stat) => (
+                <div key={stat.l} className="rounded-xl border border-gray-100 bg-gray-50 py-3 text-center">
+                  <div className="text-lg font-bold text-navy">{stat.v}</div>
+                  <div className="text-xs text-gray-500">{stat.l}</div>
                 </div>
               ))}
             </div>
           </div>
         </div>
+
+        <ProcessShareCards activeStep={activeStep} onStepSelect={goToStep} />
       </div>
     </section>
   );

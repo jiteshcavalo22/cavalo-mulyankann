@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Truck, ArrowLeft, CheckCircle2, Clock, Circle, Star,
@@ -8,6 +8,7 @@ import {
   User, Phone,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 interface Booking {
   id: string; brand: string; model: string; rto: string; gvw: string;
@@ -48,8 +49,30 @@ const timeline = [
 
 export default function DashboardPage() {
   const router = useRouter();
+  const { user, isLoggedIn, isLoading, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<"bookings" | "alerts">("bookings");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.replace("/auth/login");
+    }
+  }, [isLoading, isLoggedIn, router]);
+
+  const handleLogout = (): void => {
+    logout();
+    router.push("/");
+  };
+
+  if (isLoading || !isLoggedIn) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50">
+        <div className="text-sm text-gray-500">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  const displayName = user?.name?.split(" ")[0] ?? "User";
 
   if (selectedBooking) {
     const b = selectedBooking;
@@ -151,13 +174,13 @@ export default function DashboardPage() {
         </nav>
         <div className="p-4 border-t border-gray-200 space-y-1">
           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-600 hover:bg-gray-100 transition"><Settings className="w-4 h-4" /> Settings</button>
-          <button onClick={() => router.push("/")} className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-600 hover:bg-gray-100 transition"><LogOut className="w-4 h-4" /> Logout</button>
+          <button onClick={handleLogout} className="w-full flex items-center gap-3 px-3 py-2.5 rounded text-sm text-gray-600 hover:bg-gray-100 transition"><LogOut className="w-4 h-4" /> Logout</button>
         </div>
       </aside>
 
       <div className="flex-1 md:ml-60">
         <header className="bg-white border-b border-gray-200 px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-20">
-          <div><h1 className="text-xl font-bold text-navy">My Bookings</h1><p className="text-gray-500 text-sm">Welcome back, Rajesh</p></div>
+          <div><h1 className="text-xl font-bold text-navy">My Bookings</h1><p className="text-gray-500 text-sm">Welcome back, {displayName}</p></div>
           <button onClick={() => router.push("/book")} className="btn-cavalo text-sm px-4 py-2 inline-flex items-center gap-1"><Plus className="w-4 h-4" /> New Booking</button>
         </header>
         <div className="p-4 sm:px-6 lg:px-8 max-w-5xl">

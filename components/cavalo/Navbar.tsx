@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Menu, X, ChevronDown, Truck, Phone } from "lucide-react";
+import { Search, Menu, X, ChevronDown, Truck, Phone, LayoutDashboard } from "lucide-react";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 const navLinks = [
   { label: "New Truck", hasDropdown: true },
@@ -16,6 +17,7 @@ const navLinks = [
 
 export default function Navbar() {
   const router = useRouter();
+  const { isLoggedIn, user, isLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -58,9 +60,27 @@ export default function Navbar() {
               <Phone className="w-4 h-4" />
               <span className="font-medium">+91 70214 11346</span>
             </a>
-            <button onClick={() => router.push("/auth/login")} className="text-sm text-gray-700 font-medium hover:text-cavalo-yellow transition hidden sm:block">
-              Login
-            </button>
+            {!isLoading && isLoggedIn ? (
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="hidden items-center gap-1.5 text-sm font-medium text-gray-700 transition hover:text-cavalo-yellow sm:inline-flex"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={() => router.push("/auth/login")}
+                className="hidden text-sm font-medium text-gray-700 transition hover:text-cavalo-yellow sm:block"
+              >
+                Login
+              </button>
+            )}
+            {isLoggedIn && user ? (
+              <span className="hidden text-xs font-medium text-gray-500 md:inline">
+                Hi, {user.name.split(" ")[0]}
+              </span>
+            ) : null}
             <button onClick={() => router.push("/book")} className="btn-cavalo text-sm px-4 py-2 hidden sm:block">
               Book Inspection
             </button>
@@ -107,9 +127,26 @@ export default function Navbar() {
               {link.hasDropdown && <ChevronDown className="w-4 h-4 text-gray-400" />}
             </button>
           ))}
-          <div className="p-4 flex gap-3">
-            <button onClick={() => { router.push("/auth/login"); setMobileOpen(false); }} className="flex-1 border border-gray-300 rounded text-sm font-medium py-2">Login</button>
-            <button onClick={() => { router.push("/book"); setMobileOpen(false); }} className="flex-1 btn-cavalo text-sm py-2">Book Inspection</button>
+          <div className="flex gap-3 p-4">
+            {!isLoading && isLoggedIn ? (
+              <button
+                onClick={() => { router.push("/dashboard"); setMobileOpen(false); }}
+                className="flex flex-1 items-center justify-center gap-1.5 rounded border border-gray-300 py-2 text-sm font-medium"
+              >
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </button>
+            ) : (
+              <button
+                onClick={() => { router.push("/auth/login"); setMobileOpen(false); }}
+                className="flex-1 rounded border border-gray-300 py-2 text-sm font-medium"
+              >
+                Login
+              </button>
+            )}
+            <button onClick={() => { router.push("/book"); setMobileOpen(false); }} className="btn-cavalo flex-1 py-2 text-sm">
+              Book Inspection
+            </button>
           </div>
         </div>
       )}

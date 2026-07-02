@@ -1,18 +1,25 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Truck, ArrowLeft, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { login, isLoggedIn, isLoading } = useAuth();
   const [step, setStep] = useState<"mobile" | "otp">("mobile");
   const [mobile, setMobile] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (!isLoading && isLoggedIn) {
+      router.replace("/dashboard");
+    }
+  }, [isLoading, isLoggedIn, router]);
 
   const startTimer = () => {
     setTimer(30);
@@ -35,7 +42,13 @@ export default function LoginPage() {
     if (e.key === "Backspace" && !otp[index] && index > 0) otpRefs.current[index - 1]?.focus();
   };
 
-  const handleVerify = () => { if (otp.join("").length === 6) router.push("/dashboard"); };
+  const handleVerify = () => {
+    if (otp.join("").length !== 6) {
+      return;
+    }
+    login({ name: "User", mobile });
+    router.push("/dashboard");
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">

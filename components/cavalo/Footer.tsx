@@ -49,7 +49,7 @@ export default function Footer() {
           <div>
             <h3 className="text-cavalo-yellow font-semibold text-sm uppercase tracking-wide mb-4">More Links</h3>
             <ul className="space-y-2.5">
-              {["Inspection Loan", "On Road Price", "Become a Partner Inspector", "EMI Calculator", "About Us", "Contact Us"].map((link) => (
+              {["Inspection Loan", "On Road Price", "Become a Partner Inspector", "Pricing", "About Us", "Contact Us"].map((link) => (
                 <li key={link}>
                   <a href="#" className="text-gray-500 text-sm hover:text-cavalo-yellow transition">{link}</a>
                 </li>
