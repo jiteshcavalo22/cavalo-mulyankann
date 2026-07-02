@@ -5,15 +5,15 @@ import { useRouter } from "next/navigation";
 import { Search, Menu, X, ChevronDown, Truck, Phone, LayoutDashboard } from "lucide-react";
 import { useAuth } from "@/components/providers/AuthProvider";
 
-const navLinks = [
-  { label: "New Truck", hasDropdown: true },
-  { label: "Used Truck", hasDropdown: true },
-  { label: "Electric Vehicles", hasDropdown: false },
-  { label: "3 Wheelers", hasDropdown: false },
-  { label: "On Road Price", hasDropdown: false },
-  { label: "Finance", hasDropdown: true },
-  { label: "More", hasDropdown: true },
-];
+// const navLinks = [
+//   { label: "New Truck", hasDropdown: true },
+//   { label: "Used Truck", hasDropdown: true },
+//   { label: "Electric Vehicles", hasDropdown: false },
+//   { label: "3 Wheelers", hasDropdown: false },
+//   { label: "On Road Price", hasDropdown: false },
+//   { label: "Finance", hasDropdown: true },
+//   { label: "More", hasDropdown: true },
+// ];
 
 export default function Navbar() {
   const router = useRouter();
@@ -41,7 +41,7 @@ export default function Navbar() {
           </div>
 
           {/* Search bar */}
-          <div className="flex-1 max-w-xl hidden sm:flex relative">
+          {/* <div className="flex-1 max-w-xl hidden sm:flex relative">
             <input
               type="text"
               value={searchQuery}
@@ -52,14 +52,11 @@ export default function Navbar() {
             <button className="bg-cavalo-yellow hover:bg-cavalo-yellow-dark px-4 rounded-r-md flex items-center justify-center transition">
               <Search className="w-4 h-4 text-navy" />
             </button>
-          </div>
+          </div> */}
 
           {/* Right actions */}
           <div className="ml-auto flex items-center gap-3">
-            <a href="tel:+917021411346" className="hidden md:flex items-center gap-1.5 text-sm text-gray-600 hover:text-cavalo-yellow transition">
-              <Phone className="w-4 h-4" />
-              <span className="font-medium">+91 70214 11346</span>
-            </a>
+           
             {!isLoading && isLoggedIn ? (
               <button
                 onClick={() => router.push("/dashboard")}
@@ -92,21 +89,7 @@ export default function Navbar() {
       </div>
 
       {/* Bottom nav row */}
-      <div className="border-b border-gray-200 hidden sm:block">
-        <div className="cavalo-container">
-          <nav className="flex items-center gap-0">
-            {navLinks.map((link) => (
-              <button
-                key={link.label}
-                className="flex items-center gap-1 px-3 py-3 text-sm font-medium text-gray-700 hover:text-cavalo-yellow hover:border-b-2 hover:border-cavalo-yellow transition-all whitespace-nowrap"
-              >
-                {link.label}
-                {link.hasDropdown && <ChevronDown className="w-3.5 h-3.5" />}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </div>
+      
 
       {/* Mobile dropdown */}
       {mobileOpen && (
@@ -121,12 +104,7 @@ export default function Navbar() {
               <button className="bg-cavalo-yellow px-3 rounded-r-md"><Search className="w-4 h-4 text-navy" /></button>
             </div>
           </div>
-          {navLinks.map((link) => (
-            <button key={link.label} className="w-full text-left px-4 py-3 text-sm text-gray-700 border-b border-gray-50 hover:bg-cavalo-yellow-light hover:text-navy flex items-center justify-between">
-              {link.label}
-              {link.hasDropdown && <ChevronDown className="w-4 h-4 text-gray-400" />}
-            </button>
-          ))}
+          
           <div className="flex gap-3 p-4">
             {!isLoading && isLoggedIn ? (
               <button
