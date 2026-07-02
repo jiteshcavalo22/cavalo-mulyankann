@@ -65,8 +65,6 @@ export const INITIAL_SESSION: BookingSession = {
   originalAmount: 0,
   couponCode: "",
   discountPct: 0,
-  bookingMode: "pay_now",
   bookingStatus: "pending_payment",
-  crmLeadId: "",
   collectedDetailsSeparately: false,
 };

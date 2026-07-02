@@ -1,7 +1,6 @@
 import { BOOKING_API } from "@/lib/booking/constants";
 import type {
   ApplyCouponResult,
-  BookingMode,
   CouponListItem,
   DayAvailability,
   InspectionConfirmPayload,
@@ -48,21 +47,19 @@ export async function verifyRcApi(registrationNumber: string): Promise<VehicleDe
 }
 
 export async function reserveSlotApi(
-  payload: Omit<InspectionConfirmPayload, "bookingId" | "estimatedDuration" | "inspectorStatus" | "bookingMode" | "bookingStatus" | "crmLeadId"> & {
+  payload: Omit<InspectionConfirmPayload, "bookingId" | "estimatedDuration" | "inspectorStatus" | "bookingStatus"> & {
     registrationNumber: string;
     fullName: string;
     mobile: string;
     brand: string;
     model: string;
     gvwCategory: string;
-    mode: BookingMode;
   },
 ): Promise<ReserveBookingResponse> {
   const response = await fetch(BOOKING_API.reserve, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      mode: payload.mode,
       date: payload.date,
       hour: payload.hour,
       slot: payload.slot,

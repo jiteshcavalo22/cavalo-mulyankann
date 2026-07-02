@@ -36,7 +36,7 @@ export default function GvwCategoryPicker({ value, onChange, compact = false }: 
       </div>
       {value ? (
         <p className="mt-2 text-[11px] text-gray-500">
-          Inspection fee for pay-now bookings. No charge for CRM-only requests until payment.
+          Inspection fee included at payment based on your selected GVW category.
         </p>
       ) : null}
     </div>

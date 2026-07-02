@@ -3,10 +3,9 @@ import { GVW_PRICING } from "@/lib/booking/constants";
 import { saveBookingRecord, updateBookingRecord, getBookingRecord } from "@/lib/booking/services/booking-store";
 import { syncBookingToCrm } from "@/lib/booking/services/crm-sync";
 import { hasCalendarWriteConfig } from "@/lib/booking/services/google-calendar";
-import type { BookingMode, BookingRecord, ReserveBookingResponse } from "@/lib/booking/types";
+import type { BookingRecord, ReserveBookingResponse } from "@/lib/booking/types";
 
 interface ReserveBookingInput {
-  mode: BookingMode;
   date: string;
   hour: number;
   slot: string;
@@ -29,18 +28,12 @@ async function reserveCalendarSlot(input: ReserveBookingInput): Promise<void> {
   if (!hasCalendarWriteConfig()) {
     return;
   }
-  // Google Calendar slot block can be created here for pay_now bookings.
   void input;
 }
 
 export async function reserveBooking(input: ReserveBookingInput): Promise<ReserveBookingResponse> {
   const { bookingId, crmLeadId } = createIds();
   const now = new Date().toISOString();
-  const isPayNow = input.mode === "pay_now";
-
-  if (isPayNow) {
-    await reserveCalendarSlot(input);
-  }
 
   const record: BookingRecord = {
     bookingId,
@@ -55,9 +48,8 @@ export async function reserveBooking(input: ReserveBookingInput): Promise<Reserv
     hour: input.hour,
     slot: input.slot,
     location: input.location,
-    bookingMode: input.mode,
-    bookingStatus: isPayNow ? "pending_payment" : "crm_pending",
-    slotReserved: isPayNow,
+    bookingStatus: "pending_payment",
+    slotReserved: true,
     amount: GVW_PRICING[input.gvwCategory] ?? 1599,
     originalAmount: GVW_PRICING[input.gvwCategory] ?? 1599,
     couponCode: "",
@@ -68,18 +60,13 @@ export async function reserveBooking(input: ReserveBookingInput): Promise<Reserv
   };
 
   saveBookingRecord(record);
-  await syncBookingToCrm(record);
 
   return {
     bookingId,
-    crmLeadId,
     estimatedDuration: "1.5 - 2 hours",
-    inspectorStatus: isPayNow
-      ? "Inspector will be assigned after payment"
-      : "CRM team will contact you within 2 hours",
-    reserved: isPayNow,
-    slotReserved: isPayNow,
-    bookingMode: input.mode,
+    inspectorStatus: "Inspector will be assigned after payment",
+    reserved: true,
+    slotReserved: true,
     bookingStatus: record.bookingStatus,
   };
 }
@@ -123,7 +110,6 @@ export async function completeBookingPayment(
   }
 
   await reserveCalendarSlot({
-    mode: "pay_now",
     date: paid.date,
     hour: paid.hour,
     slot: paid.slot,

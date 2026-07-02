@@ -23,7 +23,6 @@ export default function BookingFlow() {
     handleInspectionConfirmed,
     handlePaymentComplete,
     goToPayment,
-    finishCrmLead,
     handleBack,
   } = useBookingFlow();
 
@@ -83,7 +82,6 @@ export default function BookingFlow() {
               key="confirmed"
               session={session}
               onContinueToPayment={goToPayment}
-              onFinishCrmLead={finishCrmLead}
             />
           ) : null}
 

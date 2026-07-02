@@ -89,9 +89,7 @@ export function useBookingFlow() {
       bookingId: payload.bookingId,
       estimatedDuration: payload.estimatedDuration,
       inspectorStatus: payload.inspectorStatus,
-      bookingMode: payload.bookingMode,
       bookingStatus: payload.bookingStatus,
-      crmLeadId: payload.crmLeadId,
     }));
     setStep("confirmed");
   }, []);
@@ -113,10 +111,6 @@ export function useBookingFlow() {
     setStep("payment");
   }, []);
 
-  const finishCrmLead = useCallback(() => {
-    setStep("success");
-  }, []);
-
   const handleBack = useCallback(() => {
     const previous = getPreviousStep(step, session.collectedDetailsSeparately);
     if (previous === "home") {
@@ -136,7 +130,6 @@ export function useBookingFlow() {
     handleInspectionConfirmed,
     handlePaymentComplete,
     goToPayment,
-    finishCrmLead,
     handleBack,
   };
 }

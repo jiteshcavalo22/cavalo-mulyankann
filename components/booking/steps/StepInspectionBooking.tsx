@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowRight, CreditCard, Headphones, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, CreditCard, Loader2, MapPin } from "lucide-react";
 import SlotPicker from "@/components/booking/shared/SlotPicker";
 import { useSlotAvailability } from "@/hooks/booking/useSlotAvailability";
 import { GVW_OPTIONS } from "@/lib/booking/constants";
 import { reserveSlotApi } from "@/lib/booking/services/booking-client";
-import type { BookingMode, HourlySlot, InspectionConfirmPayload, VehicleDetails } from "@/lib/booking/types";
+import type { HourlySlot, InspectionConfirmPayload, VehicleDetails } from "@/lib/booking/types";
 
 interface StepInspectionBookingProps {
   vehicle: VehicleDetails;
@@ -35,7 +35,6 @@ export default function StepInspectionBooking({
   const [selectedSlot, setSelectedSlot] = useState("");
   const [reserveError, setReserveError] = useState("");
   const [isReserving, setIsReserving] = useState(false);
-  const [activeMode, setActiveMode] = useState<BookingMode | null>(null);
 
   useEffect(() => {
     if (firstAvailableDate && !selectedDate) {
@@ -51,18 +50,16 @@ export default function StepInspectionBooking({
     setSelectedSlot(slot.time);
   };
 
-  const handleSubmit = async (mode: BookingMode): Promise<void> => {
+  const handleSubmit = async (): Promise<void> => {
     if (!selectedDate || selectedHour === null || !vehicleLocation) {
       return;
     }
 
     setIsReserving(true);
-    setActiveMode(mode);
     setReserveError("");
 
     try {
       const result = await reserveSlotApi({
-        mode,
         date: selectedDate,
         hour: selectedHour,
         slot: selectedSlot,
@@ -83,15 +80,12 @@ export default function StepInspectionBooking({
         bookingId: result.bookingId,
         estimatedDuration: result.estimatedDuration,
         inspectorStatus: result.inspectorStatus,
-        bookingMode: result.bookingMode,
         bookingStatus: result.bookingStatus,
-        crmLeadId: result.crmLeadId,
       });
     } catch (error) {
       setReserveError(error instanceof Error ? error.message : "Booking failed");
     } finally {
       setIsReserving(false);
-      setActiveMode(null);
     }
   };
 
@@ -145,28 +139,17 @@ export default function StepInspectionBooking({
       <div className="space-y-3">
         <button
           type="button"
-          onClick={() => void handleSubmit("pay_now")}
+          onClick={() => void handleSubmit()}
           disabled={!canSubmit || isReserving}
           className="btn-cavalo inline-flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-sm font-bold disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {isReserving && activeMode === "pay_now" ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
-          Pay &amp; Confirm Slot {gvwOption ? `(₹${gvwOption.price})` : ""}
+          {isReserving ? <Loader2 className="h-4 w-4 animate-spin" /> : <CreditCard className="h-4 w-4" />}
+          Reserve Slot &amp; Continue {gvwOption ? `(₹${gvwOption.price})` : ""}
           <ArrowRight className="h-4 w-4" />
         </button>
 
-        <button
-          type="button"
-          onClick={() => void handleSubmit("crm_lead")}
-          disabled={!canSubmit || isReserving}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-navy bg-white py-3.5 text-sm font-semibold text-navy transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {isReserving && activeMode === "crm_lead" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Headphones className="h-4 w-4" />}
-          Book Without Payment
-        </button>
-
         <p className="text-center text-xs text-gray-500">
-          <span className="font-semibold text-navy">Pay &amp; Confirm</span> reserves your slot and charges the selected GVW fee.
-          <span className="font-semibold text-navy"> Book Without Payment</span> sends your request to CRM — no charge until our team contacts you.
+          Your slot is reserved after confirmation. Complete payment on the next step to confirm your inspection.
         </p>
       </div>
     </motion.div>

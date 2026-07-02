@@ -120,7 +120,7 @@ export default function StepPayment({ session, gvwCategory, onPaid }: StepPaymen
         <div className="mt-4 flex items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 p-3">
           <ShieldCheck className="h-4 w-4 flex-shrink-0 text-blue-600" />
           <p className="text-xs text-blue-700">
-            Payment syncs with CRM and confirms your inspection appointment instantly.
+            Payment confirms your inspection appointment instantly. You&apos;ll receive updates on WhatsApp.
           </p>
         </div>
       </div>

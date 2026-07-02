@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, Headphones, MessageCircle } from "lucide-react";
+import { CheckCircle2, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { BookingSession } from "@/lib/booking/types";
 
@@ -11,8 +11,6 @@ interface StepSuccessProps {
 
 export default function StepSuccess({ session }: StepSuccessProps) {
   const router = useRouter();
-  const isCrmLead = session.bookingMode === "crm_lead";
-  const isPaid = session.bookingStatus === "confirmed" || session.bookingStatus === "paid";
 
   return (
     <motion.div
@@ -24,32 +22,19 @@ export default function StepSuccess({ session }: StepSuccessProps) {
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200, damping: 14 }}
-        className={`mb-5 flex h-20 w-20 items-center justify-center rounded-full ${
-          isCrmLead ? "bg-blue-100" : "bg-emerald-100"
-        }`}
+        className="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100"
       >
-        {isCrmLead ? (
-          <Headphones className="h-10 w-10 text-blue-600" />
-        ) : (
-          <CheckCircle2 className="h-10 w-10 text-emerald-600" />
-        )}
+        <CheckCircle2 className="h-10 w-10 text-emerald-600" />
       </motion.div>
 
-      <h2 className="text-2xl font-bold text-navy">
-        {isPaid ? "Inspection Confirmed!" : "Request Submitted!"}
-      </h2>
+      <h2 className="text-2xl font-bold text-navy">Inspection Confirmed!</h2>
       <p className="mt-2 max-w-sm text-sm text-gray-600">
-        {isPaid
-          ? "Payment received. Your appointment is confirmed and synced with CRM. Details sent to WhatsApp."
-          : "Your request is in CRM. Our team will call you to complete payment and confirm your appointment slot."}
+        Payment received. Your appointment is confirmed. Details sent to WhatsApp.
       </p>
 
       <div className="mt-6 w-full max-w-md rounded-2xl border border-gray-200 bg-white p-5 text-left shadow-sm">
         <p className="text-xs font-medium uppercase tracking-wide text-gray-400">Booking Reference</p>
         <p className="text-2xl font-black text-cavalo-yellow">{session.bookingId}</p>
-        {isCrmLead ? (
-          <p className="mt-1 text-xs text-gray-500">CRM Lead: {session.crmLeadId}</p>
-        ) : null}
         <div className="mt-4 space-y-2 text-sm text-gray-600">
           <p><span className="font-semibold text-navy">Name:</span> {session.fullName}</p>
           <p><span className="font-semibold text-navy">Brand:</span> {session.vehicleBrand}</p>
@@ -57,27 +42,18 @@ export default function StepSuccess({ session }: StepSuccessProps) {
           <p><span className="font-semibold text-navy">Location:</span> {session.location}</p>
           <p><span className="font-semibold text-navy">Date:</span> {session.selectedDate}</p>
           <p><span className="font-semibold text-navy">Time:</span> {session.selectedSlot}</p>
-          {isPaid ? (
-            <>
-              {session.couponCode ? (
-                <p>
-                  <span className="font-semibold text-navy">Coupon:</span> {session.couponCode} ({session.discountPct}% off)
-                </p>
-              ) : null}
-              <p>
-                <span className="font-semibold text-navy">Paid:</span> ₹{session.amount}
-                {session.originalAmount > session.amount ? (
-                  <span className="ml-1 text-xs text-gray-400 line-through">₹{session.originalAmount}</span>
-                ) : null}
-              </p>
-            </>
-          ) : (
-            <p><span className="font-semibold text-amber-600">Status:</span> Awaiting payment via CRM</p>
-          )}
+          {session.couponCode ? (
+            <p>
+              <span className="font-semibold text-navy">Coupon:</span> {session.couponCode} ({session.discountPct}% off)
+            </p>
+          ) : null}
           <p>
-            <span className="font-semibold text-navy">Slot:</span>{" "}
-            {isPaid ? "Confirmed & reserved" : "Not reserved yet"}
+            <span className="font-semibold text-navy">Paid:</span> ₹{session.amount}
+            {session.originalAmount > session.amount ? (
+              <span className="ml-1 text-xs text-gray-400 line-through">₹{session.originalAmount}</span>
+            ) : null}
           </p>
+          <p><span className="font-semibold text-navy">Slot:</span> Confirmed &amp; reserved</p>
         </div>
       </div>
 

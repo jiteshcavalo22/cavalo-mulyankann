@@ -14,6 +14,7 @@ import Footer from "@/components/cavalo/Footer";
 import ProcessVideoSection from "@/components/cavalo/ProcessVideoSection";
 import HeroProcessPreview from "@/components/cavalo/HeroProcessPreview";
 import HeroBookingWidget from "@/components/booking/HeroBookingWidget";
+import HowItWorksSection from "@/components/cavalo/HowItWorksSection";
 
 const slides = [
   {
@@ -51,16 +52,6 @@ const gvwPricing = [
   { cat: "C4", range: "25T+", price: 2599 },
 ];
 
-
-const howItWorks = [
-  { icon: User, step: 1, title: "Register", desc: "Sign up with mobile OTP in seconds." },
-  { icon: Truck, step: 2, title: "Browse & Select", desc: "Pick truck brand, GVW category and city." },
-  { icon: CreditCard, step: 3, title: "Pay Securely", desc: "Razorpay, UPI, cards or WhatsApp payment link." },
-  { icon: CheckCircle2, step: 4, title: "Booking Confirmed", desc: "Instant confirmation on WhatsApp." },
-  { icon: Shield, step: 5, title: "Inspector Assigned", desc: "Nearest certified inspector dispatched." },
-  { icon: Bell, step: 6, title: "Cavalo Alerts You", desc: "Real-time updates at every stage." },
-  { icon: FileText, step: 7, title: "Get Report", desc: "Full PDF report + WhatsApp summary." },
-];
 
 const usps = [
   { icon: TrendingUp, title: "GVW-Based Pricing", desc: "Pay only for your vehicle's weight category. Fair, transparent pricing with no hidden charges." },
@@ -252,30 +243,7 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section id="how-it-works" className="relative py-20 bg-gray-50 overflow-hidden">
-        <div className="cavalo-container">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-navy">How It Works</h2>
-            <div className="w-16 h-1 bg-cavalo-yellow mx-auto mt-3 rounded" />
-            <p className="text-gray-500 mt-3">From registration to report in 7 simple steps</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-            {howItWorks.map((step, i) => (
-              <div key={i} className="relative">
-                <div className="cavalo-card p-4 text-center h-full">
-                  <div className="w-12 h-12 bg-cavalo-yellow-light rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <step.icon className="w-6 h-6 text-cavalo-yellow" />
-                  </div>
-                  <div className="text-xs bg-cavalo-yellow text-navy font-bold rounded-full w-6 h-6 flex items-center justify-center mx-auto mb-2">{step.step}</div>
-                  <h3 className="text-navy text-sm font-semibold mb-1">{step.title}</h3>
-                  <p className="text-gray-500 text-xs leading-snug">{step.desc}</p>
-                </div>
-                {i < howItWorks.length - 1 && <ChevronRight className="hidden lg:block absolute top-1/2 -right-3 -translate-y-1/2 w-5 h-5 text-cavalo-yellow/40" />}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <HowItWorksSection />
 
       {/* GVW PRICING */}
       <section id="pricing" className="py-20 bg-white">

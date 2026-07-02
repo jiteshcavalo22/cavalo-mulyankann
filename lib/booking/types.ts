@@ -7,9 +7,7 @@ export type BookingFlowStep =
   | "payment"
   | "success";
 
-export type BookingMode = "pay_now" | "crm_lead";
-
-export type BookingStatus = "pending_payment" | "crm_pending" | "confirmed" | "paid";
+export type BookingStatus = "pending_payment" | "confirmed" | "paid";
 
 export type SlotStatus = "available" | "limited" | "full";
 export type DayStatus = "available" | "few" | "full";
@@ -61,9 +59,7 @@ export interface BookingSession {
   originalAmount: number;
   couponCode: string;
   discountPct: number;
-  bookingMode: BookingMode;
   bookingStatus: BookingStatus;
-  crmLeadId: string;
   collectedDetailsSeparately: boolean;
 }
 
@@ -90,9 +86,7 @@ export interface InspectionConfirmPayload {
   bookingId: string;
   estimatedDuration: string;
   inspectorStatus: string;
-  bookingMode: BookingMode;
   bookingStatus: BookingStatus;
-  crmLeadId: string;
 }
 
 export interface ReserveBookingResponse {
@@ -100,9 +94,7 @@ export interface ReserveBookingResponse {
   estimatedDuration: string;
   inspectorStatus: string;
   reserved: boolean;
-  bookingMode: BookingMode;
   bookingStatus: BookingStatus;
-  crmLeadId: string;
   slotReserved: boolean;
 }
 
@@ -119,7 +111,6 @@ export interface BookingRecord {
   hour: number;
   slot: string;
   location: string;
-  bookingMode: BookingMode;
   bookingStatus: BookingStatus;
   slotReserved: boolean;
   amount: number;
